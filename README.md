@@ -19,15 +19,6 @@ Fully functional AI property consultant chatbot for Dubai luxury real estate sal
 Built by Jacoral Investment Ltd | Cisco NetAcad Certified — Introduction to AI & Cybersecurity
 ```
 
----
 
-**STEP 4 — Scroll down and commit**
-- In the commit box type: `Add Nova chatbot to README`
-- Click green **"Commit changes"** button
 
----
 
-**STEP 5 — Check your live page**
-Wait 2 minutes then visit:
-```
-https://jecinoG.github.io/Jacoral-Projects/
