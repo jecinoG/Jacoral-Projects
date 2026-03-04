@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Nova — AI Property Consultant | Jacoral Investment Ltd</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --cream:#FAF7F2;
+  --cream2:#F3EDE3;
+  --warm:#E8DDD0;
+  --gold:#B8860B;
+  --gold2:#D4A017;
+  --gold3:#F0C040;
+  --gold-glow:rgba(184,134,11,0.2);
+  --dark:#0E0C09;
+  --dark2:#1A1712;
+  --dark3:#242019;
+  --surface:#2E2820;
+  --surface2:#3A3228;
+  --border:rgba(184,134,11,0.18);
+  --border2:rgba(255,255,255,0.07);
+  --text:#F0EAE0;
+  --muted:#9A8E7E;
+  --red:#E05A5A;
+  --green:#5ABE8A;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--dark);
+  color:var(--text);
+  font-family:'Outfit',sans-serif;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+}
+
+/* AMBIENT BG */
+.ambient{position:fixed;inset:0;pointer-events:none;z-index:0}
+.ambient::before{
+  content:"";position:absolute;
+  top:-20%;left:-10%;
+  width:60%;height:70%;
+  background:radial-gradient(ellipse,rgba(184,134,11,0.06) 0%,transparent 65%);
+}
+.ambient::after{
+  content:"";position:absolute;
+  bottom:-10%;right:-10%;
+  width:50%;height:60%;
+  background:radial-gradient(ellipse,rgba(184,134,11,0.04) 0%,transparent 65%);
+}
+
+/* HEADER */
+header{
+  position:relative;z-index:10;
+  background:rgba(14,12,9,0.95);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 28px;
+  height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-orb{
+  width:38px;height:38px;
+  background:linear-gradient(135deg,var(--gold),var(--gold3));
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;
+  box-shadow:0 0 24px var(--gold-glow);
+  animation:orbPulse 3s ease-in-out infinite;
+}
+@keyframes orbPulse{
+  0%,100%{box-shadow:0 0 24px var(--gold-glow)}
+  50%{box-shadow:0 0 40px rgba(184,134,11,0.4)}
+}
+.brand-text{display:flex;flex-direction:column;gap:1px}
+.brand-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;letter-spacing:.5px;color:var(--cream)}
+.brand-name span{color:var(--gold2)}
+.brand-sub{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-weight:500}
+.header-right{display:flex;align-items:center;gap:14px}
+.status-pill{
+  display:flex;align-items:center;gap:7px;
+  background:rgba(90,190,138,0.1);
+  border:1px solid rgba(90,190,138,0.25);
+  border-radius:20px;padding:5px 13px;
+  font-size:11px;font-weight:600;color:var(--green);letter-spacing:.5px;
+}
+.status-dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.powered{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.powered span{color:var(--gold2)}
+
+/* PROPERTY TICKER */
+.ticker{
+  position:relative;z-index:9;
+  background:var(--dark2);
+  border-bottom:1px solid var(--border);
+  padding:8px 0;overflow:hidden;flex-shrink:0;
+}
+.ticker-track{
+  display:flex;gap:0;
+  animation:tickerScroll 30s linear infinite;
+  white-space:nowrap;
+}
+@keyframes tickerScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ticker-item{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:0 32px;
+  font-size:11px;font-family:'DM Mono',monospace;
+  border-right:1px solid var(--border);
+}
+.ti-name{color:var(--muted)}
+.ti-price{color:var(--cream);font-weight:500}
+.ti-change{font-weight:600}
+.up{color:var(--green)}
+.dn{color:var(--red)}
+.ti-sep{color:var(--border);margin:0 4px}
+
+/* MAIN LAYOUT */
+.layout{
+  display:flex;flex:1;overflow:hidden;
+  position:relative;z-index:1;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:280px;flex-shrink:0;
+  background:var(--dark2);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.sidebar-head{
+  padding:20px 20px 14px;
+  border-bottom:1px solid var(--border2);
+}
+.sidebar-title{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-weight:600;margin-bottom:14px}
+.prop-card{
+  background:var(--dark3);
+  border:1px solid var(--border2);
+  border-radius:10px;
+  padding:14px;
+  margin-bottom:10px;
+  cursor:pointer;
+  transition:all .25s;
+  position:relative;overflow:hidden;
+}
+.prop-card::before{
+  content:"";position:absolute;
+  left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,var(--gold),var(--gold3));
+  border-radius:3px 0 0 3px;
+  opacity:0;transition:opacity .25s;
+}
+.prop-card:hover{border-color:var(--border);transform:translateX(3px)}
+.prop-card:hover::before{opacity:1}
+.prop-card.active{border-color:var(--border);background:var(--surface)}
+.prop-card.active::before{opacity:1}
+.pc-flag{font-size:16px;margin-bottom:6px}
+.pc-name{font-size:13px;font-weight:600;color:var(--cream);margin-bottom:2px}
+.pc-area{font-size:11px;color:var(--muted);margin-bottom:8px}
+.pc-price{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--gold2);margin-bottom:4px}
+.pc-yield{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(90,190,138,0.1);border:1px solid rgba(90,190,138,.2);
+  border-radius:4px;padding:2px 8px;
+  font-size:10px;font-weight:600;color:var(--green);
+}
+.sidebar-footer{
+  margin-top:auto;padding:16px 20px;
+  border-top:1px solid var(--border2);
+  font-size:11px;color:var(--muted);text-align:center;line-height:1.6;
+}
+.sidebar-footer strong{color:var(--gold2);display:block;margin-bottom:4px;font-size:13px}
+
+/* CHAT AREA */
+.chat-area{
+  flex:1;display:flex;flex-direction:column;overflow:hidden;
+}
+
+/* MESSAGES */
+.messages{
+  flex:1;overflow-y:auto;
+  padding:28px 32px;
+  display:flex;flex-direction:column;gap:20px;
+  scroll-behavior:smooth;
+}
+.messages::-webkit-scrollbar{width:4px}
+.messages::-webkit-scrollbar-track{background:transparent}
+.messages::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:2px}
+
+/* WELCOME */
+.welcome{
+  text-align:center;padding:20px 0 10px;
+  animation:fadeUp .6s ease forwards;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.welcome-orb{
+  width:64px;height:64px;
+  background:linear-gradient(135deg,var(--gold),var(--gold3));
+  border-radius:50%;
+  margin:0 auto 16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;
+  box-shadow:0 8px 32px var(--gold-glow);
+}
+.welcome h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:26px;font-weight:700;
+  color:var(--cream);margin-bottom:6px;
+}
+.welcome h2 em{color:var(--gold2);font-style:italic}
+.welcome p{font-size:13px;color:var(--muted);max-width:420px;margin:0 auto 20px;line-height:1.7}
+
+/* QUICK QUESTIONS */
+.quick-btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:8px}
+.qbtn{
+  background:var(--dark3);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:7px 14px;
+  font-size:12px;font-weight:500;
+  color:var(--cream2);
+  cursor:pointer;
+  transition:all .2s;
+  font-family:'Outfit',sans-serif;
+}
+.qbtn:hover{background:var(--surface);border-color:var(--gold2);color:var(--gold3);transform:translateY(-1px)}
+
+/* MESSAGE BUBBLES */
+.msg-row{display:flex;gap:12px;align-items:flex-end;animation:fadeUp .3s ease forwards}
+.msg-row.user{flex-direction:row-reverse}
+.msg-avatar{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0;
+}
+.av-bot{background:linear-gradient(135deg,var(--gold),var(--gold3));color:var(--dark);font-weight:700;font-size:13px}
+.av-user{background:var(--surface2);border:1px solid var(--border2)}
+.bubble{
+  max-width:72%;
+  padding:13px 17px;
+  border-radius:16px;
+  font-size:13.5px;
+  line-height:1.7;
+  position:relative;
+}
+.bot-bubble{
+  background:var(--dark3);
+  border:1px solid var(--border2);
+  border-radius:4px 16px 16px 16px;
+  color:var(--text);
+}
+.user-bubble{
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:var(--dark);
+  border-radius:16px 4px 16px 16px;
+  font-weight:500;
+}
+.bubble strong{color:var(--gold3)}
+.bot-bubble strong{color:var(--gold2)}
+.bubble ul{padding-left:16px;margin-top:6px}
+.bubble ul li{margin-bottom:4px}
+.msg-time{font-size:10px;color:var(--muted);margin-top:4px;text-align:right}
+.bot-time{text-align:left}
+
+/* PROPERTY SUGGESTION CARD IN CHAT */
+.prop-suggest{
+  background:var(--dark2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px 16px;
+  margin-top:10px;
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+.ps-item{
+  background:var(--dark3);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:12px;
+  cursor:pointer;transition:border-color .2s;
+}
+.ps-item:hover{border-color:var(--border)}
+.ps-flag{font-size:18px;margin-bottom:4px}
+.ps-name{font-size:12px;font-weight:600;color:var(--cream);margin-bottom:2px}
+.ps-price{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--gold2)}
+.ps-yield{font-size:10px;color:var(--green);margin-top:2px}
+
+/* TYPING INDICATOR */
+.typing{display:flex;align-items:center;gap:5px;padding:12px 16px;background:var(--dark3);border:1px solid var(--border2);border-radius:4px 16px 16px 16px;width:fit-content}
+.typing span{width:7px;height:7px;background:var(--muted);border-radius:50%;animation:typingDot 1.4s infinite}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes typingDot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-6px);opacity:1}}
+
+/* LEAD CAPTURE FORM */
+.lead-form{
+  background:var(--dark2);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:18px;
+  margin-top:10px;
+}
+.lf-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--cream);margin-bottom:4px}
+.lf-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+.lf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.lf-field{display:flex;flex-direction:column;gap:4px}
+.lf-field.full{grid-column:span 2}
+.lf-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-weight:600}
+.lf-input{
+  background:var(--dark3);
+  border:1px solid var(--border2);
+  border-radius:7px;
+  padding:9px 13px;
+  font-size:13px;color:var(--text);
+  font-family:'Outfit',sans-serif;
+  outline:none;transition:border-color .2s;
+}
+.lf-input:focus{border-color:var(--border)}
+.lf-input::placeholder{color:var(--muted)}
+.lf-select{
+  background:var(--dark3);
+  border:1px solid var(--border2);
+  border-radius:7px;
+  padding:9px 13px;
+  font-size:13px;color:var(--text);
+  font-family:'Outfit',sans-serif;
+  outline:none;
+  -webkit-appearance:none;
+}
+.lf-submit{
+  width:100%;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  border:none;border-radius:8px;
+  padding:11px;
+  font-size:13px;font-weight:700;
+  color:var(--dark);
+  font-family:'Outfit',sans-serif;
+  cursor:pointer;transition:opacity .2s;
+  letter-spacing:.5px;
+}
+.lf-submit:hover{opacity:.9}
+
+/* BOTTOM INPUT */
+.input-area{
+  padding:16px 32px 20px;
+  border-top:1px solid var(--border);
+  background:rgba(14,12,9,0.95);
+  backdrop-filter:blur(20px);
+  flex-shrink:0;
+}
+.input-wrap{
+  display:flex;align-items:center;gap:10px;
+  background:var(--dark2);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:6px 6px 6px 18px;
+  transition:border-color .25s;
+}
+.input-wrap:focus-within{border-color:rgba(184,134,11,0.4)}
+#chatInput{
+  flex:1;background:transparent;border:none;outline:none;
+  font-size:14px;color:var(--text);
+  font-family:'Outfit',sans-serif;
+  padding:6px 0;
+}
+#chatInput::placeholder{color:var(--muted)}
+.send-btn{
+  width:40px;height:40px;
+  background:linear-gradient(135deg,var(--gold),var(--gold3));
+  border:none;border-radius:10px;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;
+  transition:all .2s;
+  flex-shrink:0;
+}
+.send-btn:hover{transform:scale(1.05);box-shadow:0 4px 16px var(--gold-glow)}
+.input-hints{
+  display:flex;align-items:center;gap:16px;
+  margin-top:9px;padding-left:4px;
+}
+.hint{font-size:10px;color:var(--muted);letter-spacing:.5px}
+.hint span{color:var(--gold2)}
+
+/* DIVIDER */
+.chat-divider{
+  display:flex;align-items:center;gap:12px;
+  font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;
+}
+.chat-divider::before,.chat-divider::after{content:"";flex:1;height:1px;background:var(--border2)}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .messages{padding:20px 16px}
+  .input-area{padding:12px 16px 16px}
+  .bubble{max-width:88%}
+  .prop-suggest{grid-template-columns:1fr}
+  header{padding:0 16px}
+  .powered{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="ambient"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="brand">
+    <div class="brand-orb">✦</div>
+    <div class="brand-text">
+      <div class="brand-name">Nova <span>by Jacoral</span></div>
+      <div class="brand-sub">AI Property Consultant</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="status-pill"><div class="status-dot"></div>Online Now</div>
+    <div class="powered">Powered by <span>Jacoral Investment Ltd</span></div>
+  </div>
+</header>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track" id="ticker">
+    <span class="ticker-item"><span class="ti-name">Dubai — JVC 2BR</span><span class="ti-sep">|</span><span class="ti-price">AED 1.2M</span><span class="ti-sep">|</span><span class="ti-change up">Yield 7.8% ↑</span></span>
+    <span class="ticker-item"><span class="ti-name">Dubai — Palm Villa</span><span class="ti-sep">|</span><span class="ti-price">AED 8.5M</span><span class="ti-sep">|</span><span class="ti-change up">+22% Capital ↑</span></span>
+    <span class="ticker-item"><span class="ti-name">Dubai — Business Bay</span><span class="ti-sep">|</span><span class="ti-price">AED 950K</span><span class="ti-sep">|</span><span class="ti-change up">Yield 6.4% ↑</span></span>
+    <span class="ticker-item"><span class="ti-name">Lagos — Ikoyi</span><span class="ti-sep">|</span><span class="ti-price">₦450M</span><span class="ti-sep">|</span><span class="ti-change dn">FX Risk ↓</span></span>
+    <span class="ticker-item"><span class="ti-name">Dubai — Creek Harbour</span><span class="ti-sep">|</span><span class="ti-price">AED 1.8M</span><span class="ti-sep">|</span><span class="ti-change up">Yield 6.9% ↑</span></span>
+    <span class="ticker-item"><span class="ti-name">Dubai — Dubai South</span><span class="ti-sep">|</span><span class="ti-price">AED 720K</span><span class="ti-sep">|</span><span class="ti-change up">High Growth ↑</span></span>
+    <span class="ticker-item"><span class="ti-name">AED / USD Rate</span><span class="ti-sep">|</span><span class="ti-price">3.672</span><span class="ti-sep">|</span><span class="ti-change up">Stable ↔</span></span>
+    <!-- Duplicate for seamless loop -->
+    <span class="ticker-item"><span class="ti-name">Dubai — JVC 2BR</span><span class="ti-sep">|</span><span class="ti-price">AED 1.2M</span><span class="ti-sep">|</span><span class="ti-change up">Yield 7.8% ↑</span></span>
+    <span class="ticker-item"><span class="ti-name">Dubai — Palm Villa</span><span class="ti-sep">|</span><span class="ti-price">AED 8.5M</span><span class="ti-sep">|</span><span class="ti-change up">+22% Capital ↑</span></span>
+    <span class="ticker-item"><span class="ti-name">Dubai — Business Bay</span><span class="ti-sep">|</span><span class="ti-price">AED 950K</span><span class="ti-sep">|</span><span class="ti-change up">Yield 6.4% ↑</span></span>
+    <span class="ticker-item"><span class="ti-name">Lagos — Ikoyi</span><span class="ti-sep">|</span><span class="ti-price">₦450M</span><span class="ti-sep">|</span><span class="ti-change dn">FX Risk ↓</span></span>
+    <span class="ticker-item"><span class="ti-name">Dubai — Creek Harbour</span><span class="ti-sep">|</span><span class="ti-price">AED 1.8M</span><span class="ti-sep">|</span><span class="ti-change up">Yield 6.9% ↑</span></span>
+    <span class="ticker-item"><span class="ti-name">Dubai — Dubai South</span><span class="ti-sep">|</span><span class="ti-price">AED 720K</span><span class="ti-sep">|</span><span class="ti-change up">High Growth ↑</span></span>
+    <span class="ticker-item"><span class="ti-name">AED / USD Rate</span><span class="ti-sep">|</span><span class="ti-price">3.672</span><span class="ti-sep">|</span><span class="ti-change up">Stable ↔</span></span>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-head">
+      <div class="sidebar-title">Featured Listings</div>
+
+      <div class="prop-card active" onclick="suggestProperty('jvc')">
+        <div class="pc-flag">🇦🇪</div>
+        <div class="pc-name">JVC — 2 Bedroom</div>
+        <div class="pc-area">Jumeirah Village Circle, Dubai</div>
+        <div class="pc-price">AED 1,200,000</div>
+        <div class="pc-yield">📈 7.8% Annual Yield</div>
+      </div>
+
+      <div class="prop-card" onclick="suggestProperty('palm')">
+        <div class="pc-flag">🇦🇪</div>
+        <div class="pc-name">Palm — Luxury Villa</div>
+        <div class="pc-area">Palm Jumeirah, Dubai</div>
+        <div class="pc-price">AED 8,500,000</div>
+        <div class="pc-yield">📈 5.1% + Capital Growth</div>
+      </div>
+
+      <div class="prop-card" onclick="suggestProperty('bb')">
+        <div class="pc-flag">🇦🇪</div>
+        <div class="pc-name">Business Bay Studio</div>
+        <div class="pc-area">Business Bay, Dubai</div>
+        <div class="pc-price">AED 950,000</div>
+        <div class="pc-yield">📈 6.4% Annual Yield</div>
+      </div>
+
+      <div class="prop-card" onclick="suggestProperty('ds')">
+        <div class="pc-flag">🇦🇪</div>
+        <div class="pc-name">Dubai South — 1BR</div>
+        <div class="pc-area">Dubai South, Near Expo</div>
+        <div class="pc-price">AED 720,000</div>
+        <div class="pc-yield">📈 High Growth Zone</div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <strong>Jacoral Investment Ltd</strong>
+      Connecting Nigerian & Gulf investors to Dubai's most lucrative properties.
+      <br/><br/>
+      <span style="color:var(--gold2)">0% Tax · AED Stable · Remote Purchase Available</span>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="chat-area">
+    <div class="messages" id="messages">
+
+      <!-- WELCOME -->
+      <div class="welcome" id="welcome">
+        <div class="welcome-orb">✦</div>
+        <h2>Hello, I'm <em>Nova</em></h2>
+        <p>Your personal AI property consultant from Jacoral Investment Ltd. I help Nigerian and Gulf investors find the perfect Dubai property — from rental yield analysis to remote buying guidance.</p>
+        <div class="quick-btns">
+          <button class="qbtn" onclick="quickAsk('What can I buy in Dubai with $200,000?')">💰 $200K budget options</button>
+          <button class="qbtn" onclick="quickAsk('What is the rental yield in Dubai?')">📊 Dubai rental yields</button>
+          <button class="qbtn" onclick="quickAsk('Can I buy Dubai property from Nigeria?')">🇳🇬 Buy from Nigeria?</button>
+          <button class="qbtn" onclick="quickAsk('Compare Dubai vs Lagos investment')">⚖️ Dubai vs Lagos</button>
+          <button class="qbtn" onclick="quickAsk('What is the buying process for foreigners?')">📋 Buying process</button>
+          <button class="qbtn" onclick="quickAsk('I am ready to invest, connect me to an advisor')">🤝 Talk to advisor</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- INPUT -->
+    <div class="input-area">
+      <div class="input-wrap">
+        <input type="text" id="chatInput" placeholder="Ask about Dubai property, yields, buying process..." autocomplete="off"/>
+        <button class="send-btn" onclick="sendMessage()" id="sendBtn">➤</button>
+      </div>
+      <div class="input-hints">
+        <span class="hint">Try: <span>"Best area for $150K budget"</span></span>
+        <span class="hint">·</span>
+        <span class="hint">Try: <span>"How do I buy remotely?"</span></span>
+        <span class="hint">·</span>
+        <span class="hint">Try: <span>"I'm ready to invest"</span></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── KNOWLEDGE BASE ───────────────────────────────────────────────
+const KB = {
+  properties: {
+    jvc: {name:"JVC 2-Bedroom Apartment",area:"Jumeirah Village Circle",price:"AED 1,200,000 (~$327,000)",yield:"7.8%",type:"Residential",flag:"🇦🇪",notes:"High tenant demand from young professionals. Strong capital growth projected. 15 mins to Downtown Dubai."},
+    palm: {name:"Palm Jumeirah Luxury Villa",area:"Palm Jumeirah",price:"AED 8,500,000 (~$2.3M)",yield:"5.1% + capital appreciation",type:"Luxury",flag:"🇦🇪",notes:"Iconic address. Record-breaking capital growth of 22% in 2024. Preferred by UHNWIs globally."},
+    bb: {name:"Business Bay Studio",area:"Business Bay",price:"AED 950,000 (~$259,000)",yield:"6.4%",type:"Studio/Commercial",flag:"🇦🇪",notes:"Walking distance to DIFC. High corporate tenant demand. Ideal entry-level investment."},
+    ds: {name:"Dubai South 1-Bedroom",area:"Dubai South",price:"AED 720,000 (~$196,000)",yield:"Projected 8%+",type:"Off-plan",flag:"🇦🇪",notes:"Expo legacy zone. Al Maktoum Airport expansion = massive growth catalyst. Best value entry point."},
+    creek: {name:"Creek Harbour 1-Bedroom",area:"Creek Harbour",price:"AED 1,800,000 (~$490,000)",yield:"6.9%",type:"Waterfront",flag:"🇦🇪",notes:"New Downtown Dubai. Waterfront views. Emaar development — highest quality standards."}
+  },
+
+  responses: {
+    budget_low: (budget) => `For a budget around **${budget}**, here are your best Dubai options:\n\n• **Dubai South (Off-plan)** — AED 720K (~$196K). Projected 8%+ yield in the fastest-growing zone near the new Al Maktoum Airport. This is the smart money pick right now.\n• **Business Bay Studio** — AED 950K (~$259K). 6.4% yield, corporate tenants, DIFC proximity.\n\nBoth allow **remote purchase from Nigeria** — no travel required. Would you like me to run a full ROI projection for either option?`,
+
+    budget_mid: (budget) => `Excellent budget! At **${budget}** you have strong options in Dubai:\n\n• **JVC 2-Bedroom** — AED 1.2M (~$327K). **7.8% annual yield** — one of the highest in Dubai. Fully managed rental available.\n• **Creek Harbour 1-Bedroom** — AED 1.8M (~$490K). Waterfront, Emaar-built, 6.9% yield with strong capital appreciation.\n\nAt this level you're also eligible for the **UAE Golden Visa** (10-year residency) with a property purchase over AED 2M. Shall I explain the Golden Visa benefit?`,
+
+    budget_high: () => `With a premium budget you have access to Dubai's finest:\n\n• **Palm Jumeirah Villa** — AED 8.5M. The most prestigious address in the UAE. 22% capital growth in 2024 alone. Trophy asset.\n• **DIFC Penthouse** — AED 5-12M range. Preferred by HNW executives. Currency-proof in AED.\n\nAt this level I would connect you directly with our Dubai senior property specialist for a **private consultation**. Your investment would also qualify for **UAE Golden Visa** and full residency benefits. Ready for a direct introduction?`,
+
+    yield: () => `Dubai offers some of the world's highest property yields:\n\n• **JVC:** 7.4–8.1% gross yield\n• **Business Bay:** 6.2–6.8%\n• **Dubai South:** 7.5–8.5% projected\n• **Palm Jumeirah:** 4.8–5.5% + strong capital growth\n• **Creek Harbour:** 6.5–7.2%\n\nFor comparison — Lagos/Abuja yields average **2.8–3.5%** in real terms after naira devaluation. A Nigerian investor holding naira assets is losing ~25% purchasing power annually.\n\n**The AED has been pegged to the USD since 1997 — zero devaluation in 27 years.** This alone is a game-changer for Nigerian investors.`,
+
+    nigeria_buy: () => `Absolutely — and many Nigerian investors do it this way:\n\n**Step 1:** Choose your property (I can help with this)\n**Step 2:** Your lawyer issues a **Power of Attorney** — this allows transactions without you being physically present\n**Step 3:** Developer sends official SPA (Sales & Purchase Agreement)\n**Step 4:** Payment via **international bank transfer** (USD or AED)\n**Step 5:** Title deed registered in your name at Dubai Land Department\n\n✅ **No visa required to own property**\n✅ **0% property tax, 0% capital gains tax**\n✅ **Full ownership — freehold title**\n\nThe entire process takes **4–8 weeks** and can be completed entirely remotely. Would you like to book a free consultation with our Dubai property specialist?`,
+
+    compare: () => `Here's an honest comparison:\n\n| | **Dubai** | **Lagos/Abuja** |\n|---|---|---|\n| Avg Yield | 6–8% (AED) | 2.5–3.5% (NGN) |\n| Currency Risk | None (AED=USD peg) | HIGH (NGN -68% in 5yrs) |\n| Property Tax | 0% | Low but rising |\n| Capital Gains | 0% | ~10% CGT |\n| Liquidity | High (47 day avg resale) | Low (12-24 months) |\n| Legal Title | RERA-protected | C of O delays common |\n\n**The verdict:** A Nigerian investor putting $200,000 into Dubai earns ~$15,600/year in AED (protected). The same in Lagos naira earns the equivalent of ~$7,000 — and that number shrinks every year with devaluation.\n\nWant me to show you a specific 5-year projection for your budget?`,
+
+    process: () => `**Buying Dubai Property as a Foreign Investor — Step by Step:**\n\n**1. Choose Your Property** — I help you shortlist based on budget and goals\n**2. Reserve & Pay Booking Fee** — Typically AED 10,000–50,000 to secure the unit\n**3. Sign the SPA** — Sales & Purchase Agreement with developer or seller\n**4. Pay in Instalments** (off-plan) or Full Payment (completed)\n**5. Title Deed Issued** — Dubai Land Department registers your ownership\n**6. Start Earning Rent** — Property management company handles tenants for you\n\n**Remote Purchase:** All of this can be done from Nigeria via Power of Attorney.\n**No visa required** to own freehold property in Dubai.\n\nReady to take the next step? I can connect you with our Dubai specialist today.`,
+
+    golden_visa: () => `The **UAE Golden Visa** gives you 10-year UAE residency — and it's available to property investors:\n\n✅ Purchase property worth **AED 2,000,000+ ($545,000)** and you qualify\n✅ **Renewable every 10 years** — essentially permanent residency\n✅ Includes **spouse and children** under the same visa\n✅ Allows you to **live, work, and do business** in the UAE\n✅ **No sponsor required** — fully independent\n\nFor Nigerian investors, this is increasingly valuable — it provides a UAE base for business, travel, and asset protection. Properties like our **Creek Harbour 1-Bedroom (AED 1.8M)** or **combining two properties** can get you there.\n\nShall I help you find the right combination to qualify?`,
+
+    advisor: () => `Excellent! I'm going to connect you with our Dubai property specialist at **Jacoral Investment Ltd**.\n\nTo ensure they can prepare the best options for you, I'll need a few quick details:`,
+
+    tax: () => `Dubai's tax advantages for investors are exceptional:\n\n• **0% Property Tax** — you own it, you pay nothing annually\n• **0% Capital Gains Tax** — sell for profit, keep 100%\n• **0% Income Tax** on rental income\n• **0% Inheritance Tax** on property\n• **4% DLD Transfer Fee** — one-time on purchase only\n\nFor a Nigerian investor — this is in stark contrast to home. Your rental income in Dubai stays in AED, earns 6–8%, and you're taxed nothing on it. It is one of the most investor-friendly jurisdictions in the world.\n\nWould you like to see a full ROI calculation for a specific budget?`,
+
+    default: (msg) => `Thank you for your question about "${msg}".\n\nAs your AI property consultant at Jacoral Investment Ltd, I specialise in helping Nigerian and Gulf investors access Dubai's luxury property market.\n\nHere's what I can help you with right now:\n• 💰 **Budget analysis** — tell me your investment range\n• 📊 **Yield comparisons** across Dubai areas\n• 🏠 **Specific property recommendations**\n• 📋 **Buying process** for remote/foreign investors\n• 🤝 **Direct introduction** to our Dubai property specialist\n\nWhat would you like to explore?`
+  }
+};
+
+// ─── INTENT DETECTION ─────────────────────────────────────────────
+function detectIntent(msg) {
+  const m = msg.toLowerCase();
+  if(m.match(/\$50|\$80|\$100|100k|50k|80k|aed [3-9]00|small budget|entry/)) return {type:'budget',level:'low',val:'$50K–$150K'};
+  if(m.match(/\$150|\$200|\$250|\$300|200k|250k|150k|300k|aed 1|aed [56]/)) return {type:'budget',level:'mid',val:'$150K–$350K'};
+  if(m.match(/\$500|\$1m|\$2m|500k|million|luxury|villa|penthouse|premium/)) return {type:'budget',level:'high',val:'$500K+'};
+  if(m.match(/yield|return|income|rent|rental|percent|%/)) return {type:'yield'};
+  if(m.match(/nigeria|lagos|abuja|naira|ngn|from home|remotely|without travel/)) return {type:'nigeria'};
+  if(m.match(/compar|vs|versus|better|difference|dubai.*lagos|lagos.*dubai/)) return {type:'compare'};
+  if(m.match(/process|how.*buy|steps|procedure|how.*work|purchase/)) return {type:'process'};
+  if(m.match(/golden visa|residency|visa|live.*dubai|move.*dubai/)) return {type:'golden_visa'};
+  if(m.match(/tax|capital gain|stamp duty|fee/)) return {type:'tax'};
+  if(m.match(/ready|connect|advisor|specialist|consult|speak|call|book|meeting|interested/)) return {type:'advisor'};
+  if(m.match(/budget|afford|have|invest|spend|looking for/)) return {type:'budget',level:'mid',val:'your budget'};
+  return {type:'default'};
+}
+
+// ─── RESPONSE GENERATOR ───────────────────────────────────────────
+function generateResponse(intent, originalMsg) {
+  const r = KB.responses;
+  switch(intent.type) {
+    case 'budget':
+      if(intent.level==='low') return {text: r.budget_low(intent.val), showProps: ['ds','bb']};
+      if(intent.level==='high') return {text: r.budget_high(), showProps: null, showAdvisor: true};
+      return {text: r.budget_mid(intent.val), showProps: ['jvc','creek']};
+    case 'yield': return {text: r.yield()};
+    case 'nigeria': return {text: r.nigeria_buy()};
+    case 'compare': return {text: r.compare()};
+    case 'process': return {text: r.process()};
+    case 'golden_visa': return {text: r.golden_visa()};
+    case 'tax': return {text: r.tax()};
+    case 'advisor': return {text: r.advisor(), showForm: true};
+    default: return {text: r.default(originalMsg)};
+  }
+}
+
+// ─── RENDER HELPERS ───────────────────────────────────────────────
+function formatText(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\n/g,'<br/>')
+    .replace(/• /g,'• ');
+}
+
+function getTime() {
+  const n = new Date();
+  return n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
+}
+
+function addMessage(text, isBot=true, extras=null) {
+  const msgs = document.getElementById('messages');
+
+  const row = document.createElement('div');
+  row.className = 'msg-row' + (isBot ? '' : ' user');
+  row.style.opacity = '0';
+
+  const av = document.createElement('div');
+  av.className = 'msg-avatar ' + (isBot ? 'av-bot' : 'av-user');
+  av.textContent = isBot ? '✦' : '👤';
+
+  const wrap = document.createElement('div');
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble ' + (isBot ? 'bot-bubble' : 'user-bubble');
+  bubble.innerHTML = formatText(text);
+
+  const time = document.createElement('div');
+  time.className = 'msg-time ' + (isBot ? 'bot-time' : '');
+  time.textContent = getTime();
+
+  wrap.appendChild(bubble);
+  wrap.appendChild(time);
+
+  // Property suggestion cards
+  if(extras?.showProps) {
+    const grid = document.createElement('div');
+    grid.className = 'prop-suggest';
+    extras.showProps.forEach(key => {
+      const p = KB.properties[key];
+      if(!p) return;
+      const card = document.createElement('div');
+      card.className = 'ps-item';
+      card.innerHTML = `<div class="ps-flag">${p.flag}</div><div class="ps-name">${p.name}</div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">${p.area}</div><div class="ps-price">${p.price}</div><div class="ps-yield">📈 ${p.yield}</div>`;
+      card.onclick = () => quickAsk(`Tell me more about ${p.name}`);
+      grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
+  }
+
+  // Lead capture form
+  if(extras?.showForm) {
+    const form = document.createElement('div');
+    form.className = 'lead-form';
+    form.innerHTML = `
+      <div class="lf-title">Book Your Free Consultation</div>
+      <div class="lf-sub">Our Dubai property specialist will contact you within 2 hours</div>
+      <div class="lf-grid">
+        <div class="lf-field"><div class="lf-label">Full Name</div><input class="lf-input" placeholder="Your full name"/></div>
+        <div class="lf-field"><div class="lf-label">WhatsApp Number</div><input class="lf-input" placeholder="+234 or +971..."/></div>
+        <div class="lf-field"><div class="lf-label">Investment Budget</div>
+          <select class="lf-select lf-input">
+            <option value="">Select range</option>
+            <option>$100K – $200K</option>
+            <option>$200K – $500K</option>
+            <option>$500K – $1M</option>
+            <option>$1M+</option>
+          </select>
+        </div>
+        <div class="lf-field"><div class="lf-label">Investment Goal</div>
+          <select class="lf-select lf-input">
+            <option value="">Select goal</option>
+            <option>Rental Income</option>
+            <option>Capital Growth</option>
+            <option>Holiday Home</option>
+            <option>Golden Visa</option>
+            <option>All of the above</option>
+          </select>
+        </div>
+      </div>
+      <button class="lf-submit" onclick="submitLead(this)">✦ Connect Me to the Dubai Specialist →</button>`;
+    wrap.appendChild(form);
+  }
+
+  row.appendChild(av);
+  row.appendChild(wrap);
+  msgs.appendChild(row);
+
+  requestAnimationFrame(() => {
+    row.style.transition = 'opacity .3s ease, transform .3s ease';
+    row.style.transform = 'translateY(8px)';
+    requestAnimationFrame(() => {
+      row.style.opacity = '1';
+      row.style.transform = 'translateY(0)';
+    });
+  });
+
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('messages');
+  const row = document.createElement('div');
+  row.className = 'msg-row';
+  row.id = 'typing-row';
+
+  const av = document.createElement('div');
+  av.className = 'msg-avatar av-bot';
+  av.textContent = '✦';
+
+  const typing = document.createElement('div');
+  typing.className = 'typing';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+
+  row.appendChild(av);
+  row.appendChild(typing);
+  msgs.appendChild(row);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-row');
+  if(t) t.remove();
+}
+
+function submitLead(btn) {
+  btn.textContent = '✅ Request Sent! Our specialist will contact you within 2 hours.';
+  btn.style.background = 'linear-gradient(135deg,var(--green),#3AA870)';
+  btn.disabled = true;
+  setTimeout(() => {
+    addMessage("Your consultation request has been received! 🎉\n\nOur Dubai property specialist from **Jacoral Investment Ltd** will contact you on WhatsApp within 2 hours.\n\nIn the meantime, feel free to ask me anything else about the Dubai property market.", true);
+  }, 500);
+}
+
+// ─── SIDEBAR PROPERTY CLICK ───────────────────────────────────────
+function suggestProperty(key) {
+  document.querySelectorAll('.prop-card').forEach(c=>c.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  const p = KB.properties[key];
+  quickAsk(`Tell me more about the ${p.name} in ${p.area}`);
+}
+
+// ─── SEND LOGIC ───────────────────────────────────────────────────
+function quickAsk(text) {
+  document.getElementById('chatInput').value = text;
+  sendMessage();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if(!msg) return;
+
+  // Hide welcome
+  const welcome = document.getElementById('welcome');
+  if(welcome) welcome.style.display = 'none';
+
+  input.value = '';
+  addMessage(msg, false);
+
+  showTyping();
+
+  const delay = 900 + Math.random() * 800;
+  await new Promise(r => setTimeout(r, delay));
+  removeTyping();
+
+  const intent = detectIntent(msg);
+  const response = generateResponse(intent, msg);
+  addMessage(response.text, true, response);
+}
+
+// Enter key
+document.getElementById('chatInput').addEventListener('keydown', e => {
+  if(e.key === 'Enter') sendMessage();
+});
+
+// ─── OPENING MESSAGE ─────────────────────────────────────────────
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    addMessage("Welcome! I'm **Nova**, your AI property consultant from Jacoral Investment Ltd. 🏙️\n\nI specialise in connecting Nigerian and Gulf investors with high-yield Dubai properties — with **0% property tax**, stable AED currency, and returns of up to 8% annually.\n\nWhat brings you here today? Are you looking to invest, learn about the market, or ready to speak with our Dubai specialist?", true);
+  }, 600);
+});
+</script>
+</body>
+</html>
