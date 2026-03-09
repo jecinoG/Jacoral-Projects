@@ -1,8 +1,8 @@
-# Jacoral Investment Ltd — Portfolio Projects
+# JacoralLtd — Portfolio Projects
 
-AI, Cybersecurity, and Real Estate technology projects by Jacoral Investment Ltd.
+AI, Cybersecurity, and Real Estate technology projects by Jacoral Ltd.
 
-## 🚀 Live Projects
+## Live Projects 
 
 •⁠  ⁠*Project 1 — AI CEO Market Intelligence Dashboard*  
   AI-powered investment dashboard for Nigerian and Dubai-based executives.  
@@ -19,7 +19,7 @@ AI, Cybersecurity, and Real Estate technology projects by Jacoral Investment Ltd
 ---
 
 ### 📜 About
-Built by *Jacoral Investment Ltd*  
+Built by *Jacoral Ltd*  
 Cisco NetAcad Certified — Introduction to AI & Cybersecurity
 
 
